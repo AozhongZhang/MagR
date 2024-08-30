@@ -94,7 +94,7 @@ def W_proximal_preprocess(W, X, device, alpha=0.001, n_iter=150):
     del XtX
     return W_hat.T
 
-def W_proximal_preprocess_H(W, H, device, alpha=0.001, n_iter=150):
+def W_proximal_preprocess_H(W, H, alpha=0.001, n_iter=150):
     
     W_hat = W.clone().T
 
@@ -106,7 +106,6 @@ def W_proximal_preprocess_H(W, H, device, alpha=0.001, n_iter=150):
         W_hat = linfty_proximal(
             (W_hat - step_size * torch.matmul(H, W_hat-W.T)).T, alpha).T
 
-    
     return W_hat.T
 
 
@@ -207,7 +206,7 @@ def W_proximal_preprocess_groupwise(W, X, device, alpha=0.0001, n_iter=150, grou
     del XtX
     return W_hat.T
 
-def W_proximal_preprocess_groupwise_H(W, H, device, alpha=0.0001, n_iter=150, group_size=128):
+def W_proximal_preprocess_groupwise_H(W, H, alpha=0.0001, n_iter=150, group_size=128):
 
     W_hat = W.clone().T
 

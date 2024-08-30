@@ -74,19 +74,25 @@ class GPTQ:
         W = W.float()
         W_orig = W
         
-        if magr:
+        if magr: # apply MagR preprocessing
             
             if groupsize != -1:
                 
                 print('per group!')
-                
+
+                # this is one sample implementation. If you use this, one sample self.X is required.
                 W = W_proximal_preprocess_groupwise(W, self.X, self.dev, group_size=groupsize)
-                # W = W_proximal_preprocess_groupwise_H(W, self.X, self.dev, group_size=groupsize)
+                
+                # # this is the 128 samples implementation. If you use this, just apply self.H.
+                # W = W_proximal_preprocess_groupwise_H(W, self.H, group_size=groupsize)
             else:
 
                 print('per layer!')
-                W = W_proximal_preprocess(W, self.X, self.dev)
-                # W = W_proximal_preprocess_H(W, self.H, self.dev)
+                # this is one sample implementation. If you use this, one sample self.X is required.
+                W = W_proximal_preprocess(W, self.X, self.dev) 
+                
+                # # this is the 128 samples implementation. If you use this, just apply self.H.
+                # W = W_proximal_preprocess_H(W, self.H)
 
             self.quantizer.find_params(W, weight=True)
 
