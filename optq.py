@@ -81,11 +81,12 @@ class GPTQ:
                 print('per group!')
                 
                 W = W_proximal_preprocess_groupwise(W, self.X, self.dev, group_size=groupsize)
+                # W = W_proximal_preprocess_groupwise_H(W, self.X, self.dev, group_size=groupsize)
             else:
 
                 print('per layer!')
                 W = W_proximal_preprocess(W, self.X, self.dev)
-                W = W_proximal_preprocess_H(W, self.H, self.dev)
+                # W = W_proximal_preprocess_H(W, self.H, self.dev)
 
             self.quantizer.find_params(W, weight=True)
 
