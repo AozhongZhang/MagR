@@ -92,8 +92,14 @@ def llama_sequential(model, dataloader, dev):
             for name in subset:
                 gptq[name] = GPTQ(subset[name])
                 gptq[name].quantizer = Quantizer()
+
+                if args.wbits == 2:
+                    beta = 0.8
+                elif args.wbits == 3:
+                    beta = 0.9
+
                 gptq[name].quantizer.configure(
-                    args.wbits, perchannel=True, sym=args.sym, mse=False
+                    args.wbits, perchannel=True, sym=args.sym, mse=False, beta=beta,
                 )
 
             def add_batch(name):
