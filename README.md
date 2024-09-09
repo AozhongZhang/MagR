@@ -22,5 +22,5 @@ Or
 
 ```
 # Quantize LlaMa2-7B for 4 bit
-python llama.py meta-llama/llama-2-7b-hf wikitext2 --wbits 4
+python llama.py meta-llama/llama-2-7b-hf wikitext2 --wbits 4 --magr
 ```
