@@ -54,7 +54,6 @@ class GPTQ:
             inp = inp.permute([1, 0, 2])
             inp = inp.flatten(1)
         
-        self.X = inp.t().float()
         self.XtX += inp.float().matmul(inp.float().t()) 
         self.H *= self.nsamples / (self.nsamples + tmp)
         self.nsamples += tmp
@@ -64,35 +63,29 @@ class GPTQ:
         self.H += inp.matmul(inp.t())
 
     def fasterquant(
-        self, blocksize=128, percdamp=.01, groupsize=-1, actorder=False, static_groups=False, magr=True,
+        self, blocksize=128, percdamp=.01, groupsize=-1, actorder=False, static_groups=False, magr=False, CD_update=False,
     ):
         W = self.layer.weight.data.clone()
         if isinstance(self.layer, nn.Conv2d):
             W = W.flatten(1)
         if isinstance(self.layer, transformers.Conv1D):
             W = W.t()
+        
         W = W.float()
         W_orig = W
         
-        if magr: # apply MagR preprocessing
+        if magr:
             
             if groupsize != -1:
                 
                 print('per group!')
-
-                # this is one sample implementation. If you use this, one sample self.X is required.
-                W = W_proximal_preprocess_groupwise(W, self.X, self.dev, group_size=groupsize)
                 
-                # # this is the 128 samples implementation. If you use this, just apply self.H.
-                # W = W_proximal_preprocess_groupwise_H(W, self.H, group_size=groupsize)
+                W = W_proximal_preprocess_groupwise(W, self.X, self.dev, group_size=groupsize)
             else:
 
                 print('per layer!')
-                # this is one sample implementation. If you use this, one sample self.X is required.
-                W = W_proximal_preprocess(W, self.X, self.dev) 
-                
-                # # this is the 128 samples implementation. If you use this, just apply self.H.
-                # W = W_proximal_preprocess_H(W, self.H)
+                # W = W_proximal_preprocess(W, self.X, self.dev)
+                W = W_proximal_preprocess_H(W, self.H, self.dev)
 
             self.quantizer.find_params(W, weight=True)
 
@@ -195,60 +188,65 @@ class GPTQ:
         
         del H, Hinv, W1, Q1, Err1, Losses1, Hinv1
         
-        Q_comq = Q.reshape(self.layer.weight.shape).clone()
+        if CD_update:
+            Q_CD = Q.reshape(self.layer.weight.shape).clone()
 
-        self.XtX = self.XtX.to(self.dev)
-        diag_Sigma = torch.diagonal(self.XtX, 0)
-        diag_Sigma += 0.75*torch.mean(torch.diagonal(self.XtX))
-        norm_Sigma = torch.div(self.XtX, diag_Sigma+0.1) 
-        
-        P = torch.matmul(W_orig, norm_Sigma)
-        
-        norm_Sigma.fill_diagonal_(0)
-        norm_Sigma = norm_Sigma.t()
+            self.XtX = self.XtX.to(self.dev)
+            diag_Sigma = torch.diagonal(self.XtX, 0)
+            diag_Sigma += 0.75*torch.mean(torch.diagonal(self.XtX))
+            norm_Sigma = torch.div(self.XtX, diag_Sigma+0.1) 
+            
+            P = torch.matmul(W_orig, norm_Sigma)
+            
+            norm_Sigma.fill_diagonal_(0)
+            norm_Sigma = norm_Sigma.t()
 
-        for _ in range(1):
-            
-            delta_Q = Q_comq.clone().t()
-            
-            P_hat = torch.matmul(norm_Sigma, delta_Q).t()
-            
-            for j in range(self.columns):
+            for _ in range(1):
                 
-                u = P[:, j] - P_hat[:, j]
+                delta_Q = Q_CD.clone().t()
                 
-                if j > 0:
+                P_hat = torch.matmul(norm_Sigma, delta_Q).t()
                 
-                    u += torch.matmul(norm_Sigma[j, :j], delta_Q[:j, :])
-
-                if groupsize != -1:
+                for j in range(self.columns):
                     
-                    if not static_groups:
-                        
-                        if j % groupsize == 0:
-                        
-                            self.quantizer.find_params(Q_comq[:, j:(j + groupsize)], weight=True)
+                    u = P[:, j] - P_hat[:, j]
+                    
+                    if j > 0:
+                    
+                        u += torch.matmul(norm_Sigma[j, :j], delta_Q[:j, :])
 
-                    else:
+                    if groupsize != -1:
                         
-                        idx = j
-                        
-                        if actorder:
-                            idx = perm[idx]
-                        
-                        self.quantizer = groups[idx // groupsize]
+                        if not static_groups:
+                            
+                            if j % groupsize == 0:
+                            
+                                self.quantizer.find_params(Q_CD[:, j:(j + groupsize)], weight=True)
 
-                u = quantize(u.unsqueeze(1), self.quantizer.scale, self.quantizer.zero, self.quantizer.maxq).flatten()
-                
-                Q_comq[:, j] = u
-                
-                delta_Q[j, :] -= u
-        quantize_error = torch.norm(self.X @ W_orig.T - self.X @ Q_comq.T, p='fro')
-        print('the quantized error: ', quantize_error)
+                        else:
+                            
+                            idx = j
+                            
+                            if actorder:
+                                idx = perm[idx]
+                            
+                            self.quantizer = groups[idx // groupsize]
 
-        if isinstance(self.layer, transformers.Conv1D):
-            Q = Q.t()
-        self.layer.weight.data = Q_comq.reshape(self.layer.weight.shape).to(self.layer.weight.data.dtype)
+                    u = quantize(u.unsqueeze(1), self.quantizer.scale, self.quantizer.zero, self.quantizer.maxq).flatten()
+                    
+                    Q_CD[:, j] = u
+                    
+                    delta_Q[j, :] -= u
+            
+            if isinstance(self.layer, transformers.Conv1D):
+                Q = Q.t()
+            self.layer.weight.data = Q_CD.reshape(self.layer.weight.shape).to(self.layer.weight.data.dtype)
+        else:
+
+            if isinstance(self.layer, transformers.Conv1D):
+                Q = Q.t()
+            self.layer.weight.data = Q.reshape(self.layer.weight.shape).to(self.layer.weight.data.dtype)
+
         if DEBUG:
             print(torch.sum((self.layer(self.inp1) - self.out1) ** 2))
 

@@ -18,7 +18,7 @@ def get_llama(model):
     torch.nn.init.uniform_ = skip
     torch.nn.init.normal_ = skip
     from transformers import LlamaForCausalLM
-    model = LlamaForCausalLM.from_pretrained(model, torch_dtype='auto', token='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')
+    model = LlamaForCausalLM.from_pretrained(model, torch_dtype='auto')
     model.seqlen = 2048
     return model
 
@@ -118,7 +118,7 @@ def llama_sequential(model, dataloader, dev):
                 print(i, name)
                 print('Quantizing ...')
                 gptq[name].fasterquant(
-                    percdamp=args.percdamp, groupsize=args.groupsize, actorder=args.act_order, static_groups=args.static_groups, magr=args.magr,
+                    percdamp=args.percdamp, groupsize=args.groupsize, actorder=args.act_order, static_groups=args.static_groups, magr=args.magr, CD_update=args.CD_update
                 )
                 # quantizers['model.decoder.layers.%d.%s' % (i, name)] = gptq[name].quantizer
                 quantizers['model.layers.%d.%s' % (i, name)] = gptq[name].quantizer
@@ -319,10 +319,15 @@ if __name__ == '__main__':
         help='Whether to apply the MagR process.'
     )
 
+    parser.add_argument(
+        '--CD_update', action='store_true',
+        help='Whether to apply the Coordinate descent update.'
+    )
+
     args = parser.parse_args()
     
     model = get_llama(args.model)
-    print(model)
+    
     model.eval()
 
     dataloader, testloader = get_loaders(
@@ -337,7 +342,7 @@ if __name__ == '__main__':
 
     datasets = ['wikitext2', 'c4'] 
     if args.new_eval:
-        datasets = ['wikitext2', 'ptb-new', 'c4-new']
+        datasets = ['wikitext2', 'c4-new']
     for dataset in datasets:
         dataloader, testloader = get_loaders(
             dataset, seed=args.seed, model=args.model, seqlen=model.seqlen
