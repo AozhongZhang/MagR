@@ -9,7 +9,7 @@ This repository contains the code for the Neurips 2024 paper MagR: Weight Magnit
 * `optq.py`: the implementations of OPTQ
 
 
-## Install
+## Dependencies
 
 * pip install --upgrade pip 
 * pip install -e .
@@ -19,11 +19,13 @@ Or
 * `transformers`: v4.36.0
 * `datasets`: v2.18.0
 
+All experiments were run on a single 80GB NVIDIA A100. However, most experiments are compatible with a GPU with significantly less memory.
+
 
 ## Run MagR
 
 ```
-# Quantize LlaMa2-7B for 4 bit
+# Quantize LlaMa2-7B for 4 bit by MagR+GPTQ
 python llama.py meta-llama/llama-2-7b-hf wikitext2 --wbits 4 --magr
 
 # Further improve LlaMa2-7B for 4 bit
