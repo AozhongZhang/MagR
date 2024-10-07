@@ -1,8 +1,8 @@
 ## MagR [Neurips 2024]
 
-This repository contains the code for the Neurips 2024 paper MagR: Weight Magnitude Reduction for Enhancing Post-Training Quantization. The current release includes the following features:
+This repository contains the code for the Neurips 2024 paper [**MagR: Weight Magnitude Reduction for Enhancing Post-Training Quantization**](https://arxiv.org/abs/2406.00800) The current release includes the following features:
 
-* `MagR.py`: the functions of MagR. There are some hyper-parameters in these function. $\alpha$: 0.001 (per-channel), 0,0001 (per-group); n_iter: 200 (128 samples). Theoretically, the more iterations, the better. But in order to balance the number of iterations and running time, 200 are chosen.
+* `MagR.py`: the main functions of MagR. There are some hyper-parameters in these function. $\alpha$: 0.001 (per-channel), 0,0001 (per-group); n_iter: 200 (128 samples). Theoretically, the more iterations, the better. But in order to balance the number of iterations and running time, 200 are chosen.
 * `modelutils.py`: model utilities
 * `datautils.py`: data utilities
 * `quant.py`: quantizer
@@ -43,3 +43,8 @@ If you found this work useful, please consider citing:
   year={2024}
 }
 ```
+
+## Acknowledgements
+This code is based on [GPTQ](https://github.com/IST-DASLab/gptq) and [GPTQ-for-LLaMa](https://github.com/qwopqwop200/GPTQ-for-LLaMa)
+
+Thanks to Meta AI for releasing [LLaMA](https://arxiv.org/abs/2302.13971), a powerful LLM.
