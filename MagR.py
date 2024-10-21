@@ -168,7 +168,7 @@ def linfty_proximal_groupwise(x, scale, group_size=128):
     return proximal_result.view(-1, num_features)
 
 
-def W_proximal_preprocess_groupwise(W, X, device, alpha=0.0001, n_iter=150, group_size=128):
+def W_proximal_preprocess_groupwise(W, X, device, alpha=0.0001, n_iter=200, group_size=128):
 
     W_hat = W.clone().T
 
