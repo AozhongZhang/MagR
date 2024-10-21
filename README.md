@@ -2,7 +2,7 @@
 
 This repository contains the code for the Neurips 2024 paper [**MagR: Weight Magnitude Reduction for Enhancing Post-Training Quantization**](https://arxiv.org/abs/2406.00800) The current release includes the following features:
 
-* `MagR.py`: the main functions of MagR. There are some hyper-parameters in these function. $\alpha$: 0.001 (per-channel), 0.0001 (per-group); n_iter: 200 (128 samples). Theoretically, the more iterations, the better. But in order to balance the number of iterations and running time, 200 are chosen.
+* `MagR.py`: the main functions of MagR. There are some hyper-parameters in these function. $\alpha$: 0.001 (per-channel), 0.0001 (per-group); n_iter: 200. Theoretically, the more iterations, the better. But in order to balance the number of iterations and running time, 200 are chosen.
 * `modelutils.py`: model utilities
 * `datautils.py`: data utilities
 * `quant.py`: quantizer
