@@ -13,7 +13,7 @@ def get_wikitext2(nsamples, seed, seqlen, model):
     testdata = load_dataset('wikitext', 'wikitext-2-raw-v1', split='test')
 
     from transformers import AutoTokenizer 
-    tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False, token='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')
+    tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False, token='')
     trainenc = tokenizer("\n\n".join(traindata['text']), return_tensors='pt')
     testenc = tokenizer("\n\n".join(testdata['text']), return_tensors='pt')
 
@@ -61,7 +61,7 @@ def get_c4_llama3(nsamples, seed, seqlen, model):
     )
 
     from transformers import AutoTokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False, use_auth_token='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')
+    tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False, use_auth_token='')
 
     import random
     random.seed(seed)
@@ -119,7 +119,7 @@ def get_c4(nsamples, seed, seqlen, model):
     )
 
     from transformers import AutoTokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False, token='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')
+    tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False, token='')
 
     import random
     random.seed(seed)
