@@ -25,11 +25,9 @@ All experiments were run on a single 80GB NVIDIA A100. However, most experiments
 ## Run MagR
 
 ```
-# Quantize LlaMa2-7B for 4 bit by MagR+GPTQ
+# Quantize LlaMa2-7B for 4 bit by MagR+GPTQ per-channel quantization
 python llama.py meta-llama/llama-2-7b-hf wikitext2 --wbits 4 --magr
 
-# Further improve LlaMa2-7B for 4 bit
-python llama.py meta-llama/llama-2-7b-hf wikitext2 --wbits 4 --magr --CD_update
 ```
 
 ## Citation
