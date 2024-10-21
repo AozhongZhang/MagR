@@ -69,7 +69,7 @@ def linfty_proximal(x, scale):
     return x - scale * project_onto_l1_ball(x / scale)
 
 # this is one sample
-def W_proximal_preprocess(W, X, device, alpha=0.001, n_iter=150):
+def W_proximal_preprocess(W, X, device, alpha=0.001, n_iter=200):
     
     W_hat = W.clone().T
 
@@ -94,21 +94,6 @@ def W_proximal_preprocess(W, X, device, alpha=0.001, n_iter=150):
     del XtX
     return W_hat.T
 
-# this is 128 samples
-def W_proximal_preprocess_H(W, H, device, alpha=0.001, n_iter=200):
-    
-    W_hat = W.clone().T
-
-    U, s, Vt = torch.linalg.svd(H)
-
-    step_size = 1 / torch.max(s)
-    
-    for _ in range(n_iter):
-        W_hat = linfty_proximal(
-            (W_hat - step_size * torch.matmul(H, W_hat-W.T)).T, alpha).T
-
-    
-    return W_hat.T
 
 
 
@@ -208,17 +193,4 @@ def W_proximal_preprocess_groupwise(W, X, device, alpha=0.0001, n_iter=150, grou
     del XtX
     return W_hat.T
 
-def W_proximal_preprocess_groupwise_H(W, H, alpha=0.0001, n_iter=200, group_size=128):
-
-    W_hat = W.clone().T
-
-    U, s, Vt = torch.linalg.svd(X, full_matrices=False)
-    
-    step_size = 1 / torch.max(s)
-
-    for _ in range(n_iter):
-        W_hat = linfty_proximal_groupwise(
-            (W_hat - step_size * torch.matmul(H, W_hat-W.T)).T, scale=alpha, group_size=group_size).T
-
-    return W_hat.T
 

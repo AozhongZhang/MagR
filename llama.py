@@ -70,6 +70,14 @@ def llama_sequential(model, dataloader, dev):
     print('Ready.')
     start_time = datetime.now()
 
+    beta = 1
+    CD_iter = 1
+    if args.wbits == 2:
+        beta = 0.8
+        CD_iter = 30
+    elif args.wbits == 3:
+        beta = 0.9
+
     quantizers = {}
     for i in range(len(layers)):
         layer = layers[i].to(dev)
@@ -93,10 +101,6 @@ def llama_sequential(model, dataloader, dev):
                 gptq[name] = GPTQ(subset[name])
                 gptq[name].quantizer = Quantizer()
 
-                if args.wbits == 2:
-                    beta = 0.8
-                elif args.wbits == 3:
-                    beta = 0.9
 
                 gptq[name].quantizer.configure(
                     args.wbits, perchannel=True, sym=args.sym, mse=False, beta=beta,
@@ -118,7 +122,7 @@ def llama_sequential(model, dataloader, dev):
                 print(i, name)
                 print('Quantizing ...')
                 gptq[name].fasterquant(
-                    percdamp=args.percdamp, groupsize=args.groupsize, actorder=args.act_order, static_groups=args.static_groups, magr=args.magr, CD_update=args.CD_update
+                    percdamp=args.percdamp, groupsize=args.groupsize, actorder=args.act_order, static_groups=args.static_groups, magr=args.magr, CD_iter=CD_iter
                 )
                 # quantizers['model.decoder.layers.%d.%s' % (i, name)] = gptq[name].quantizer
                 quantizers['model.layers.%d.%s' % (i, name)] = gptq[name].quantizer
@@ -319,10 +323,6 @@ if __name__ == '__main__':
         help='Whether to apply the MagR process.'
     )
 
-    parser.add_argument(
-        '--CD_update', action='store_true',
-        help='Whether to apply the Coordinate descent update.'
-    )
 
     args = parser.parse_args()
     

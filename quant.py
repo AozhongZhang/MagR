@@ -70,7 +70,6 @@ class Quantizer(nn.Module):
           self.scale = xmax
           self.zero = xmin
         else:
-        #   self.scale = (xmax - xmin) / self.maxq
           self.scale = self.beta*(xmax - xmin) / self.maxq
           if self.sym:
               self.zero = torch.full_like(self.scale, (self.maxq + 1) / 2)
