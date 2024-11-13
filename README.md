@@ -11,10 +11,6 @@ This repository contains the code for the Neurips 2024 paper [**MagR: Weight Mag
 
 ## Dependencies
 
-* pip install --upgrade pip 
-* pip install -e .
-
-Or
 * `torch`: v2.3.0
 * `transformers`: v4.36.0
 * `datasets`: v2.18.0
