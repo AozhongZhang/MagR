@@ -72,11 +72,17 @@ def llama_sequential(model, dataloader, dev):
 
     beta = 1
     CD_iter = 1
+        
     if args.wbits == 2:
         beta = 0.8
         CD_iter = 30
     elif args.wbits == 3:
         beta = 0.9
+
+    if args.groupsize == 128:
+        beta = 0.95
+    elif args.groupsize == 64:
+        beta = 1
 
     quantizers = {}
     for i in range(len(layers)):
