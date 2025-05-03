@@ -222,7 +222,7 @@ class GPTQ:
                             
                         if j % groupsize == 0:
                             
-                            self.quantizer.find_params(Q_CD[:, j:(j + groupsize)], weight=True)
+                            self.quantizer.find_params(Q[:, j:(j + groupsize)], weight=True)
 
                     else:
                             
