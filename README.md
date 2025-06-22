@@ -8,6 +8,9 @@ This repository contains the code for the Neurips 2024 paper [**MagR: Weight Mag
 * `quant.py`: quantizer
 * `optq.py`: the implementations of OPTQ
 
+## News
+
+- [2025/04] MagR is integrated into [AMD Brevitas](https://github.com/Xilinx/brevitas/blob/master/src/brevitas/graph/magr.py)
 
 ## Dependencies
 
